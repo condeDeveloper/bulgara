@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.so }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        so: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      # Os testes primeiro: sao eles que prendem os numeros das tabelas.
+      - name: Testes
+        run: dotnet test testes/Bulgara.Testes/Bulgara.Testes.csproj -c Release --nologo
+
+      - name: Totais triangulares e o limite classico
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- triangulares
+
+      - name: Totais nao triangulares e os ciclos
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- quaisquer
+
+      - name: As mesas que ninguem produz
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- orfas
+
+      - name: Tamanhos dos ciclos
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- tamanhos
